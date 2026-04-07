@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: lifeshare-blood-donation
+    env: node
+    region: singapore
+    plan: free
+    rootDir: server
+    buildCommand: cd ../client && npm install && npm run build && cd ../server && npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false   # You will set this manually in Render dashboard
