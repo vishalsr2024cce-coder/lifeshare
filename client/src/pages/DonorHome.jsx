@@ -1,8 +1,29 @@
-import React from 'react';
-import { Droplet, Heart, Award, ArrowRight, Activity, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Droplet, Heart, Award, ArrowRight, Activity, Calendar, Clock, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const DonorHome = () => {
+  const [urgentRequests, setUrgentRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [selectedHospital, setSelectedHospital] = useState('');
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const response = await fetch('/api/requests');
+        const data = await response.json();
+        setUrgentRequests(data.filter(r => r.status === 'pending').slice(0, 3));
+      } catch (error) {
+        console.error('Error fetching requests:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, []);
+
   return (
     <div className="flex-1 md:ml-72 min-h-screen bg-slate-50 relative overflow-x-hidden pt-16 md:pt-0 pb-10">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-50/80 rounded-full blur-3xl opacity-70 -translate-y-1/2 translate-x-1/3 pointer-events-none animate-fade-in-up"></div>
@@ -67,27 +88,50 @@ const DonorHome = () => {
         <div className="glass-panel p-6 md:p-8 rounded-3xl">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-extrabold text-slate-900">Urgent matches near you</h3>
-            <Link to="/hospital" className="text-brand-600 font-bold text-sm flex items-center hover:bg-brand-50 px-3 py-1.5 rounded-lg transition-colors">
+            <Link to="/all-requests" className="text-brand-600 font-bold text-sm flex items-center hover:bg-brand-50 px-3 py-1.5 rounded-lg transition-colors">
               See all <ArrowRight size={16} className="ml-1" />
             </Link>
           </div>
 
-          <div className="bg-brand-50/50 border border-brand-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 hover:shadow-lg hover:shadow-brand-100/50 transition-all duration-300">
-             <div className="flex items-center gap-5">
-               <div className="w-16 h-16 rounded-2xl bg-white border border-brand-200 text-brand-600 flex items-center justify-center font-black text-2xl shadow-sm">
-                 O+
-               </div>
-               <div>
-                 <div className="flex items-center gap-2 mb-1">
-                   <h4 className="font-extrabold text-lg text-slate-900">Kauvery Hospital</h4>
-                   <span className="bg-rose-100 text-rose-700 text-[10px] uppercase font-black px-2 py-0.5 rounded-md tracking-wider">Critical</span>
-                 </div>
-                 <p className="text-slate-500 font-medium text-sm">2.4 km away • Trichy • Requirement: 3 Units</p>
-               </div>
-             </div>
-             <button className="w-full sm:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md shadow-brand-500/20 whitespace-nowrap">
-               I can donate
-             </button>
+          <div className="space-y-4">
+            {loading ? (
+              <div className="h-24 bg-slate-100 animate-pulse rounded-2xl"></div>
+            ) : urgentRequests.length > 0 ? (
+              urgentRequests.map((request) => (
+                <div key={request._id} className="bg-brand-50/50 border border-brand-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 hover:shadow-lg hover:shadow-brand-100/50 transition-all duration-300">
+                  <div className="flex items-center gap-5">
+                    <div className="w-16 h-16 rounded-2xl bg-white border border-brand-200 text-brand-600 flex items-center justify-center font-black text-2xl shadow-sm">
+                      {request.bloodType}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-extrabold text-lg text-slate-900">{request.hospitalName}</h4>
+                        <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-md tracking-wider ${
+                          request.urgency === 'critical' ? 'bg-rose-100 text-rose-700' : 
+                          request.urgency === 'high' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {request.urgency}
+                        </span>
+                      </div>
+                      <p className="text-slate-500 font-medium text-sm flex items-center gap-3">
+                        <span className="flex items-center gap-1"><MapPin size={14}/> {request.area || 'Hospital Location'}</span>
+                        <span className="flex items-center gap-1 text-xs opacity-75"><Clock size={12}/> Added {new Date(request.createdAt).toLocaleDateString()}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <Link 
+                    to={`/donate-now/${request._id}`}
+                    className="w-full sm:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md shadow-brand-500/20 whitespace-nowrap text-center"
+                  >
+                    I can donate
+                  </Link>
+                </div>
+              ))
+            ) : (
+              <div className="h-32 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-400 font-medium italic">
+                No urgent blood requests at the moment.
+              </div>
+            )}
           </div>
         </div>
       </div>

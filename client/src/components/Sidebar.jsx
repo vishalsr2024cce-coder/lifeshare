@@ -78,6 +78,24 @@ const Sidebar = ({ user, setUser }) => {
             </Link>
           </div>
 
+          <div className="bg-slate-900/50 rounded-2xl p-4 mb-4 border border-slate-800/50">
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3">Testing Role</p>
+            <div className="flex gap-2 p-1 bg-slate-950 rounded-xl">
+              <button 
+                onClick={() => setUser({...user, role: 'donor'})}
+                className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${user?.role === 'donor' ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/20' : 'text-slate-500 hover:text-white'}`}
+              >
+                Donor
+              </button>
+              <button 
+                onClick={() => setUser({...user, role: 'hospital'})}
+                className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${user?.role === 'hospital' || user?.role === 'admin' ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/20' : 'text-slate-500 hover:text-white'}`}
+              >
+                Hospital
+              </button>
+            </div>
+          </div>
+
           <button
             onClick={() => setUser(null)}
             className="w-full flex items-center px-4 py-3 text-sm font-medium text-slate-400 rounded-xl hover:bg-slate-800/50 hover:text-white transition-colors"
