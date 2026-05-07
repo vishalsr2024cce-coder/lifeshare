@@ -5,7 +5,10 @@ services:
     region: singapore
     plan: free
     rootDir: server
-    buildCommand: cd .. && npm install && cd server && npm install && cd ../client && npm install && npm run build
+    buildCommand: npm install && npm --prefix ../client install && npm --prefix ../client run build
+
+
+
 
 
 
